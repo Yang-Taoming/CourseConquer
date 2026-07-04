@@ -1,0 +1,29 @@
+# 复制本文件为 models.yaml 并填入你自己的网关地址与 api_key
+# 不同人用不同 key —— models.yaml 已被 gitignore，不会提交
+gateway:
+  base_url: http://your-gateway/v1
+  api_key: sk-xxxxxxxxxxxxxxxx
+
+# 模型名称给默认值（当前在用的几款）；可按需覆盖
+models:
+  llm_model: bailian/deepseek-v4-flash        # 文本主力（快省）
+  llm_model_strong: bailian/deepseek-v4-pro   # Agent3 合成（更强/长上下文）
+  vision_model: qwen-vl-max                   # 图片 OCR + 图表理解
+  embed_model: BAAI/bge-m3                    # 向量化
+  web_model: moonshotai/kimi-k2:online        # 联网搜索
+
+parsing:
+  ocr_min_chars: 12        # OCR 文本少于此值 -> 视觉兜底
+  pdf_page_min_chars: 8    # PDF 某页少于此值 -> 视为扫描页
+  chunk_size: 1000
+  chunk_overlap: 150
+  enrich_max_chars: 6000
+
+qa:
+  top_k: 5
+  max_rounds: 3
+  context_budget: 7000
+  history_turns: 4
+
+kg:
+  batch_chars: 3500

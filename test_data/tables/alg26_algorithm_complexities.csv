@@ -1,0 +1,16 @@
+category,algorithm,problem,complexity,applicable_condition,key_note
+sorting,Insertion Sort,comparison sorting,Theta(n^2) worst and average; Theta(n) best,small or nearly sorted arrays,stable and in-place
+sorting,Merge Sort,comparison sorting,Theta(n log n),general comparison sorting,stable but not in-place
+sorting,Heap Sort,comparison sorting,O(n log n),general comparison sorting,in-place but not stable
+sorting,Counting Sort,integer sorting,O(n+k),keys in a small integer range,non-comparison stable sorting
+graph,BFS,unweighted shortest path,Theta(V+E),unweighted graph or edge count distance,uses a queue and three-color marking
+graph,DFS,graph traversal,Theta(V+E),directed or undirected graph,records discovery and finish times
+graph,Kruskal,MST,O(E log V),undirected weighted graph,sort edges and use union-find
+graph,Dijkstra,single-source shortest path,O(E log V),non-negative edge weights,binary heap implementation
+graph,Bellman-Ford,single-source shortest path,Theta(VE),negative edges allowed,detects negative cycles
+graph,Floyd-Warshall,all-pairs shortest path,Theta(V^3),dense graph or small graph,dynamic programming
+graph,Edmonds-Karp,maximum flow,O(VE^2),flow network,BFS shortest augmenting paths
+graph,Dinic,maximum flow,O(V^2E),flow network,level graph and blocking flow
+dp,LCS,longest common subsequence,Theta(mn),two sequences,dynamic programming table
+dp,0-1 Knapsack,capacity constrained selection,Theta(nW),integer capacity W,pseudo-polynomial time
+string,KMP,pattern matching,Theta(m+n),exact string matching,prefix function prevents text pointer rollback

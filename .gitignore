@@ -1,0 +1,10 @@
+# OS / 编辑器杂项
+.DS_Store
+~$*
+*.swp
+*.swo
+Thumbs.db
+
+# 子目录各有自己的 .gitignore：
+#   Backend/.gitignore   —— .venv / data / model-config/models.yaml / __pycache__
+#   Frontend/.gitignore  —— node_modules / dist / .vite

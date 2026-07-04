@@ -1,0 +1,20 @@
+ALG26 graph algorithms note
+
+This file is a plain TXT version of the same test content used by the DOCX, C,
+and C++ samples. It is intended to verify that the knowledge-base assistant can
+extract consistent summaries and tags from simple text files.
+
+Core facts:
+
+1. BFS and DFS both run in Theta(V + E).
+2. Dijkstra solves single-source shortest paths with non-negative edge weights.
+3. Bellman-Ford allows negative edges and can detect negative cycles.
+4. Floyd-Warshall solves all-pairs shortest paths in Theta(V^3).
+5. Edmonds-Karp solves max flow in O(VE^2).
+6. Dinic solves max flow in O(V^2E) on general graphs.
+
+Expected summary:
+Compare common graph algorithms by task, applicability, and complexity.
+
+Expected tags:
+graph algorithms, BFS, DFS, shortest path, max flow, complexity

@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# 模型配置（含密钥）—— 模板 models.example.yaml 可提交
+.env
+.env.*
+model-config/models.yaml
+
+# 运行时数据（上传原文件 + SQLite 知识库）
+data/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store

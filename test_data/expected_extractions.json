@@ -1,0 +1,270 @@
+{
+  "schema": {
+    "title": "不超过 20 字",
+    "summary_short": "一句话摘要",
+    "summary_detail": "100 字以内详细摘要",
+    "category": "从 [论文方法, 课程笔记, 代码片段, 实验结果, 图片截图, 项目想法, 网页资料] 中选择",
+    "tags": "5-8 个关键词",
+    "entities": "关键实体",
+    "claims": "材料中明确或隐含的核心论点",
+    "evidence": "支持论点的证据",
+    "open_questions": "由该材料引出的未解决问题",
+    "reusable_outputs": "该材料适合用于哪些输出",
+    "importance": "0-1 的重要性评分"
+  },
+  "items": [
+    {
+      "source_path": "assets/test_data/code/kmp_prefix_function.py",
+      "title": "KMP前缀函数",
+      "summary_short": "该代码实现了 KMP 前缀函数和字符串匹配。",
+      "summary_detail": "代码通过 compute_pi 构造模式串前缀函数，并在 kmp_search 中利用 pi 回退模式指针，从而避免文本指针回退，实现线性时间字符串匹配。",
+      "category": "代码片段",
+      "tags": ["KMP", "字符串匹配", "前缀函数", "线性时间", "Python"],
+      "entities": ["compute_pi", "kmp_search", "pattern", "text", "pi"],
+      "claims": [
+        "KMP 可通过前缀函数避免文本指针回退。",
+        "前缀函数可用于失配后的模式串指针回退。",
+        "完整搜索可在线性时间内完成。"
+      ],
+      "evidence": [
+        "compute_pi 函数维护 pi 数组和 j 指针。",
+        "失配时执行 j = pi[j - 1]。",
+        "kmp_search 在找到匹配后记录起始下标并继续搜索。"
+      ],
+      "open_questions": [
+        "如何处理 Unicode 字符串的匹配边界？",
+        "KMP 与 Boyer-Moore 在实际英文文本中性能如何比较？"
+      ],
+      "reusable_outputs": ["代码复用", "报告", "PPT", "思维导图", "算法讲解"],
+      "importance": 0.82
+    },
+    {
+      "source_path": "assets/test_data/code/dijkstra_vs_bellman_ford.py",
+      "title": "最短路径代码",
+      "summary_short": "该代码对比了 Dijkstra 与 Bellman-Ford 的适用条件。",
+      "summary_detail": "代码实现了非负权图上的 Dijkstra 和支持负权边的 Bellman-Ford，并通过额外松弛检查判断是否存在负权环。",
+      "category": "代码片段",
+      "tags": ["Dijkstra", "Bellman-Ford", "最短路径", "负权边", "松弛", "Python"],
+      "entities": ["dijkstra_nonnegative", "bellman_ford", "heapq", "negative cycle", "dist"],
+      "claims": [
+        "Dijkstra 要求边权非负。",
+        "Bellman-Ford 可以处理负权边。",
+        "Bellman-Ford 可检测负权环。"
+      ],
+      "evidence": [
+        "Dijkstra 中遇到 weight < 0 会抛出异常。",
+        "Bellman-Ford 执行 len(vertices)-1 轮松弛。",
+        "最后通过是否还能继续松弛检测负权环。"
+      ],
+      "open_questions": [
+        "稀疏图中 Bellman-Ford 是否可以用 SPFA 优化？",
+        "负权边较少时是否有更合适的算法选择？"
+      ],
+      "reusable_outputs": ["代码复用", "报告", "PPT", "算法对比表"],
+      "importance": 0.84
+    },
+    {
+      "source_path": "assets/test_data/code/red_black_tree_insert_fixup_outline.md",
+      "title": "红黑树修复概要",
+      "summary_short": "该笔记概括了红黑树性质和插入修复情况。",
+      "summary_detail": "材料列出红黑树五条性质，并总结插入修复中叔父为红和叔父为黑时的变色、旋转处理，但不提供完整代码。",
+      "category": "课程笔记",
+      "tags": ["红黑树", "插入修复", "旋转", "变色", "平衡树"],
+      "entities": ["Red-Black Tree", "uncle", "parent", "grandparent", "NIL"],
+      "claims": [
+        "红黑树依赖颜色和黑高约束维持平衡。",
+        "叔父为红时主要通过变色并向上继续修复。",
+        "叔父为黑时可能需要旋转终止冲突。",
+        "该材料不是完整实现。"
+      ],
+      "evidence": [
+        "笔记列出五条红黑树性质。",
+        "笔记写明 uncle is red 时 recolor 并继续。",
+        "笔记写明 uncle is black 时根据形态旋转。",
+        "材料明确说明 intentionally not full code。"
+      ],
+      "open_questions": [
+        "删除修复与插入修复有哪些差异？",
+        "如何把概要转换为完整可运行实现？"
+      ],
+      "reusable_outputs": ["报告", "PPT", "思维导图", "知识库问答"],
+      "importance": 0.76
+    },
+    {
+      "source_path": "assets/test_data/code/graph_algorithm_complexities.c",
+      "title": "C图算法表",
+      "summary_short": "该 C 文件用结构体数组整理图算法复杂度。",
+      "summary_detail": "代码通过 AlgorithmFact 结构体保存 BFS、DFS、Dijkstra、Bellman-Ford、Floyd-Warshall、Edmonds-Karp 和 Dinic 的任务、复杂度与适用条件。",
+      "category": "代码片段",
+      "tags": ["C", "图算法", "复杂度", "最短路径", "最大流", "结构体"],
+      "entities": ["AlgorithmFact", "BFS", "DFS", "Dijkstra", "Bellman-Ford", "Dinic"],
+      "claims": [
+        "图算法可以按任务、复杂度和适用条件结构化整理。",
+        "Dijkstra 适用于非负权最短路径。",
+        "Edmonds-Karp 和 Dinic 都用于最大流问题。"
+      ],
+      "evidence": [
+        "FACTS 数组包含 name、task、complexity、condition 字段。",
+        "Dijkstra 记录的 condition 是 non-negative weights。",
+        "Edmonds-Karp 与 Dinic 的 task 均为 maximum flow。"
+      ],
+      "open_questions": [
+        "是否需要把这些事实转成可查询数据库表？",
+        "C 代码注释和数组内容冲突时应以哪个为准？"
+      ],
+      "reusable_outputs": ["代码复用", "报告", "算法对比表", "知识库问答"],
+      "importance": 0.72
+    },
+    {
+      "source_path": "assets/test_data/code/graph_algorithm_complexities.cpp",
+      "title": "C++图算法表",
+      "summary_short": "该 C++ 文件用 vector 保存图算法复杂度信息。",
+      "summary_detail": "代码用 AlgorithmFact 结构体和 vector 整理多个图算法的任务、复杂度与适用条件，可测试 C++ 源码解析和摘要能力。",
+      "category": "代码片段",
+      "tags": ["C++", "图算法", "复杂度", "vector", "最短路径", "最大流"],
+      "entities": ["AlgorithmFact", "std::vector", "BFS", "Dijkstra", "Floyd-Warshall", "Dinic"],
+      "claims": [
+        "C++ 源码中可结构化保存算法事实。",
+        "Floyd-Warshall 用于全源最短路径。",
+        "Dinic 用于最大流问题。"
+      ],
+      "evidence": [
+        "facts 是 std::vector<AlgorithmFact>。",
+        "Floyd-Warshall 的 task 是 all-pairs shortest path。",
+        "Dinic 的 task 是 maximum flow。"
+      ],
+      "open_questions": [
+        "是否需要从源码中抽取结构化表格？",
+        "注释和代码实体应如何共同参与检索？"
+      ],
+      "reusable_outputs": ["代码复用", "报告", "算法对比表", "PPT"],
+      "importance": 0.72
+    },
+    {
+      "source_path": "assets/test_data/text/alg26_graph_algorithms_note.txt",
+      "title": "图算法文本笔记",
+      "summary_short": "该 TXT 笔记总结了常见图算法的复杂度和适用场景。",
+      "summary_detail": "文本列出 BFS、DFS、Dijkstra、Bellman-Ford、Floyd-Warshall、Edmonds-Karp 和 Dinic 的关键用途、限制条件与时间复杂度。",
+      "category": "课程笔记",
+      "tags": ["TXT", "图算法", "复杂度", "最短路径", "最大流", "复习"],
+      "entities": ["BFS", "DFS", "Dijkstra", "Bellman-Ford", "Floyd-Warshall", "Edmonds-Karp", "Dinic"],
+      "claims": [
+        "BFS 和 DFS 都是 Theta(V + E)。",
+        "Bellman-Ford 支持负权边并检测负权环。",
+        "Floyd-Warshall 的复杂度为 Theta(V^3)。"
+      ],
+      "evidence": [
+        "文本列出 BFS and DFS both run in Theta(V + E)。",
+        "文本列出 Bellman-Ford allows negative edges and can detect negative cycles。",
+        "文本列出 Floyd-Warshall solves all-pairs shortest paths in Theta(V^3)。"
+      ],
+      "open_questions": [
+        "这些算法在稀疏图和稠密图中如何选择？",
+        "是否需要补充空间复杂度？"
+      ],
+      "reusable_outputs": ["报告", "PPT", "思维导图", "复习提纲"],
+      "importance": 0.8
+    },
+    {
+      "source_path": "assets/test_data/docs/alg26_graph_algorithms_note.docx",
+      "title": "图算法DOCX",
+      "summary_short": "该 DOCX 文档整理了常见图算法的复杂度。",
+      "summary_detail": "DOCX 内容与 TXT、C、C++ 样例保持一致，用于测试文档解析能力，重点覆盖遍历、最短路径、全源最短路径和最大流算法。",
+      "category": "课程笔记",
+      "tags": ["DOCX", "图算法", "复杂度", "最短路径", "最大流", "文档解析"],
+      "entities": ["BFS", "DFS", "Dijkstra", "Bellman-Ford", "Floyd-Warshall", "Edmonds-Karp", "Dinic"],
+      "claims": [
+        "DOCX 可作为课程笔记类资料导入知识库。",
+        "材料覆盖图遍历、最短路径和最大流。",
+        "同一内容可用于测试不同文件格式解析一致性。"
+      ],
+      "evidence": [
+        "文档标题为 ALG26 Graph Algorithms Note。",
+        "正文列出六条 Core facts。",
+        "内容说明与 TXT、C、C++ samples 相同。"
+      ],
+      "open_questions": [
+        "DOCX 中的表格、图片和脚注是否也能被完整解析？",
+        "不同 DOCX 解析器对公式支持是否一致？"
+      ],
+      "reusable_outputs": ["报告", "PPT", "思维导图", "知识库问答"],
+      "importance": 0.78
+    },
+    {
+      "source_path": "assets/test_data/tables/alg26_algorithm_complexities.csv",
+      "title": "算法复杂度CSV",
+      "summary_short": "该 CSV 表格对比了多类算法的复杂度和适用条件。",
+      "summary_detail": "表格覆盖排序、图算法、动态规划和字符串匹配，字段包括类别、算法、问题、复杂度、适用条件和关键说明。",
+      "category": "课程笔记",
+      "tags": ["CSV", "表格", "复杂度", "算法对比", "排序", "图算法"],
+      "entities": ["Insertion Sort", "Merge Sort", "BFS", "Dijkstra", "0-1 Knapsack", "KMP"],
+      "claims": [
+        "不同算法可按问题类型和复杂度进行结构化比较。",
+        "CSV 适合用于表格解析和条件检索测试。",
+        "0-1 背包复杂度依赖容量 W，属于伪多项式时间。"
+      ],
+      "evidence": [
+        "表头包含 category、algorithm、problem、complexity、applicable_condition、key_note。",
+        "0-1 Knapsack 行的 complexity 为 Theta(nW)。",
+        "KMP 行的 key_note 提到 prefix function prevents text pointer rollback。"
+      ],
+      "open_questions": [
+        "表格解析后是否保留列名语义？",
+        "复杂度表达式是否需要标准化为机器可比较格式？"
+      ],
+      "reusable_outputs": ["报告", "PPT", "算法对比表", "知识库问答"],
+      "importance": 0.83
+    },
+    {
+      "source_path": "assets/test_data/images/alg26_graph_algorithms_ocr.png",
+      "title": "图算法OCR图",
+      "summary_short": "该图片用于测试图算法复杂度内容的 OCR 识别。",
+      "summary_detail": "图片以速记卡形式展示 BFS、DFS、Dijkstra、Bellman-Ford、Floyd-Warshall、Edmonds-Karp 和 Dinic 的复杂度与适用说明。",
+      "category": "图片截图",
+      "tags": ["OCR", "图片截图", "图算法", "复杂度", "最短路径", "最大流"],
+      "entities": ["BFS", "DFS", "Dijkstra", "Bellman-Ford", "Floyd-Warshall", "Edmonds-Karp", "Dinic"],
+      "claims": [
+        "OCR 图片可以承载结构化算法复习信息。",
+        "Dijkstra 只适用于非负权边。",
+        "Bellman-Ford 可以检测负权环。",
+        "Edmonds-Karp 和 Dinic 属于最大流算法。"
+      ],
+      "evidence": [
+        "图片文字包含 Dijkstra: non-negative weights only。",
+        "图片文字包含 Bellman-Ford: negative edges, detects negative cycles。",
+        "图片文字包含 Max flow: Edmonds-Karp O(VE^2), Dinic O(V^2E)。"
+      ],
+      "open_questions": [
+        "OCR 是否能准确识别 Theta、指数和括号？",
+        "图片中的布局信息是否应转成表格结构？"
+      ],
+      "reusable_outputs": ["PPT", "思维导图", "复习卡片", "知识库问答"],
+      "importance": 0.81
+    },
+    {
+      "source_path": "assets/ALG26_Exam_Review.pdf",
+      "title": "算法期末总纲",
+      "summary_short": "该 PDF 是 ALG26 算法基础课程的期末复习总纲。",
+      "summary_detail": "文档按主题整理算法基础、递归、排序、分治、数据结构、动态规划、贪心、图算法、字符串匹配和复杂度对比，适合构建课程知识库。",
+      "category": "课程笔记",
+      "tags": ["算法基础", "CLRS", "复杂度", "图算法", "动态规划", "排序", "数据结构"],
+      "entities": ["ALG26", "CLRS", "BFS", "Dijkstra", "KMP", "红黑树", "动态规划"],
+      "claims": [
+        "该文档覆盖算法基础课程的核心知识点。",
+        "复杂度分析是贯穿多个章节的主线。",
+        "图算法、动态规划和排序是复习重点。"
+      ],
+      "evidence": [
+        "目录列出 11 个主题章节。",
+        "文档包含排序算法、DP、图算法、字符串匹配等复杂度总表。",
+        "标题说明其为期末复习总纲。"
+      ],
+      "open_questions": [
+        "哪些章节需要补充例题和代码实现？",
+        "如何基于该 PDF 生成分章节复习计划？"
+      ],
+      "reusable_outputs": ["报告", "PPT", "思维导图", "复习提纲", "知识库问答"],
+      "importance": 0.93
+    }
+  ]
+}

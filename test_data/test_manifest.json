@@ -1,0 +1,162 @@
+{
+  "dataset_name": "ALG26 code and image upload test set",
+  "purpose": "Supplemental real files for testing code ingestion and image OCR ingestion in the knowledge-base assistant.",
+  "files": [
+    {
+      "path": "assets/test_data/code/kmp_prefix_function.py",
+      "content_type": "code/python",
+      "expected_summary": "Python implementation of KMP prefix-function preprocessing and pattern search. It demonstrates fallback through pi[j-1] and linear-time matching.",
+      "expected_tags": [
+        "KMP",
+        "字符串匹配",
+        "前缀函数",
+        "线性时间",
+        "Python"
+      ],
+      "good_questions": [
+        "这段代码里的 compute_pi 函数是做什么的？",
+        "为什么 KMP 搜索时文本指针不需要回退？",
+        "kmp_search 找到一次匹配后为什么把 j 设为 pi[j-1]？"
+      ]
+    },
+    {
+      "path": "assets/test_data/code/dijkstra_vs_bellman_ford.py",
+      "content_type": "code/python",
+      "expected_summary": "Python snippets comparing Dijkstra and Bellman-Ford. Dijkstra rejects negative edge weights, while Bellman-Ford supports negative edges and detects negative cycles.",
+      "expected_tags": [
+        "Dijkstra",
+        "Bellman-Ford",
+        "最短路径",
+        "负权边",
+        "松弛"
+      ],
+      "good_questions": [
+        "这段代码为什么在 Dijkstra 中检查 weight < 0？",
+        "Bellman-Ford 如何检测负权环？",
+        "有负权边但没有负权环时应该用哪个函数？"
+      ]
+    },
+    {
+      "path": "assets/test_data/code/red_black_tree_insert_fixup_outline.md",
+      "content_type": "markdown",
+      "expected_summary": "Red-black tree insert-fixup outline with the five properties and three common fixup cases, but no complete code.",
+      "expected_tags": [
+        "红黑树",
+        "插入修复",
+        "旋转",
+        "变色",
+        "平衡树"
+      ],
+      "good_questions": [
+        "红黑树插入修复中叔父节点为红色时怎么处理？",
+        "这份资料是否给出了完整红黑树插入修复代码？",
+        "叔父为黑色时为什么可能需要先旋转一次？"
+      ]
+    },
+    {
+      "path": "assets/test_data/images/alg26_graph_algorithms_ocr.png",
+      "content_type": "image/png",
+      "expected_ocr_text_contains": [
+        "ALG26 Graph Algorithms Cheat Sheet",
+        "BFS / DFS: Theta(V + E)",
+        "Dijkstra: non-negative weights only",
+        "Bellman-Ford: negative edges, detects negative cycles",
+        "Floyd-Warshall: all-pairs shortest paths",
+        "Max flow: Edmonds-Karp O(VE^2), Dinic O(V^2E)"
+      ],
+      "expected_tags": [
+        "OCR",
+        "图算法",
+        "复杂度",
+        "最短路径",
+        "最大流"
+      ],
+      "good_questions": [
+        "图片里 BFS 和 DFS 的复杂度是多少？",
+        "图片里哪个算法可以检测负权环？",
+        "图片里 Edmonds-Karp 和 Dinic 的复杂度分别是多少？"
+      ]
+    },
+    {
+      "path": "assets/test_data/tables/alg26_algorithm_complexities.csv",
+      "content_type": "text/csv",
+      "expected_summary": "CSV table comparing representative sorting, graph, dynamic programming, and string algorithms by problem, complexity, applicable condition, and key note.",
+      "expected_tags": [
+        "CSV",
+        "表格",
+        "复杂度",
+        "算法对比",
+        "检索测试"
+      ],
+      "good_questions": [
+        "CSV 里哪些算法适用于最短路径问题？",
+        "表格中哪些算法复杂度是 Theta(V+E)？",
+        "Counting Sort 的适用条件是什么？",
+        "0-1 Knapsack 为什么被标记为 pseudo-polynomial time？"
+      ]
+    },
+    {
+      "path": "assets/test_data/docs/alg26_graph_algorithms_note.docx",
+      "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "expected_summary": "DOCX note comparing graph algorithms by task, applicability, and complexity.",
+      "expected_tags": [
+        "DOCX",
+        "图算法",
+        "复杂度",
+        "最短路径",
+        "最大流"
+      ],
+      "good_questions": [
+        "DOCX 里 BFS 和 DFS 的复杂度是多少？",
+        "DOCX 里哪个算法要求非负权边？",
+        "DOCX 里哪些算法用于最大流？"
+      ]
+    },
+    {
+      "path": "assets/test_data/text/alg26_graph_algorithms_note.txt",
+      "content_type": "text/plain",
+      "expected_summary": "Plain text note comparing graph algorithms by task, applicability, and complexity.",
+      "expected_tags": [
+        "TXT",
+        "图算法",
+        "复杂度",
+        "最短路径",
+        "最大流"
+      ],
+      "good_questions": [
+        "TXT 里 Bellman-Ford 的特点是什么？",
+        "TXT 里 Floyd-Warshall 的复杂度是多少？"
+      ]
+    },
+    {
+      "path": "assets/test_data/code/graph_algorithm_complexities.c",
+      "content_type": "text/x-c",
+      "expected_summary": "C source file storing graph algorithm facts in comments and an AlgorithmFact array.",
+      "expected_tags": [
+        "C",
+        "图算法",
+        "复杂度",
+        "源码解析"
+      ],
+      "good_questions": [
+        "C 文件里的 AlgorithmFact 结构体有哪些字段？",
+        "C 文件中 Dijkstra 的适用条件是什么？"
+      ]
+    },
+    {
+      "path": "assets/test_data/code/graph_algorithm_complexities.cpp",
+      "content_type": "text/x-c++",
+      "expected_summary": "C++ source file storing graph algorithm facts in a vector of AlgorithmFact records.",
+      "expected_tags": [
+        "C++",
+        "图算法",
+        "复杂度",
+        "源码解析"
+      ],
+      "good_questions": [
+        "C++ 文件用什么容器保存算法事实？",
+        "C++ 文件中哪些算法用于 maximum flow？"
+      ]
+    }
+  ]
+}

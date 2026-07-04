@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic>=2
+python-multipart
+openai>=1.30
+pyyaml>=6
+pymupdf
+python-docx
+python-pptx
+openpyxl
+numpy

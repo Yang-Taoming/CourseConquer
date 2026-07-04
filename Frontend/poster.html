@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>Course Conquer — A4 Poster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Caveat:wght@400;500;600;700&family=Ma+Shan+Zheng&family=Long+Cang&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f1e8d0;        /* 暖白 marker 纸（回到上一版） */
+    --paper-2: #ebe0c0;
+    --ink: #14110a;          /* 黑墨 */
+    --ink-soft: #2a2418;
+    --graphite: #b9ad8c;     /* 石墨辅线 */
+    --accent: #7a3d12;       /* 深褐红，强调 */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); }
+  body {
+    font-family: 'Ma Shan Zheng', 'Caveat', cursive;
+    color: var(--ink);
+    width: 210mm; height: 297mm;
+    overflow: hidden;
+  }
+  .poster {
+    width: 210mm; height: 297mm;
+    padding: 30mm 20mm 22mm;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: space-between;
+    position: relative;
+    /* 暖白 marker 纸：淡横线 + 边缘暗化 + 暖光 */
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(255,250,235,0.55), transparent 62%),
+      repeating-linear-gradient(0deg, transparent 0 11mm, rgba(120,108,76,0.045) 11mm 11.2mm),
+      linear-gradient(170deg, #f3ead2 0%, #ece0c0 55%, #e3d5af 100%);
+  }
+  .poster::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    box-shadow: inset 0 0 10mm 2mm rgba(90,76,40,0.20);
+  }
+  .poster::after {
+    content: ''; position: absolute; top: 20mm; left: 20mm; right: 20mm; height: 0.4mm;
+    background: linear-gradient(90deg, transparent, var(--graphite), transparent);
+    opacity: 0.45;
+  }
+
+  /* —— 顶部小签 —— */
+  .topline {
+    font-family: 'Caveat', cursive;
+    font-size: 14pt; color: var(--accent);
+    letter-spacing: 0.04em; opacity: 0.85;
+    z-index: 1;
+  }
+
+  /* —— 中央 —— */
+  .center {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    width: 100%; position: relative;
+    z-index: 1;
+  }
+  .title-wrap { position: relative; }
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    font-weight: 400;
+    font-size: 106pt;
+    line-height: 0.9;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    text-align: center;
+    text-shadow: 0 0.5px 0 rgba(20,17,10,0.4), 0 1.5px 2px rgba(20,17,10,0.15);
+  }
+  .title-ghost {
+    position: absolute; left: 0; right: 0; top: 100%;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 106pt; line-height: 0.9;
+    color: var(--ink); opacity: 0.05;
+    transform: scaleY(-1) translateY(2mm);
+    filter: blur(0.6px);
+    text-align: center; pointer-events: none;
+  }
+
+  /* —— 流动手写文案 —— */
+  .copy {
+    margin-top: 22mm;
+    text-align: center;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .row { margin: 3mm 0; }
+  .lbl {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 20pt; color: var(--ink-soft);
+  }
+  .val {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 30pt; color: var(--ink);
+  }
+  .pain {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 21pt; color: var(--ink-soft);
+    max-width: 56ch; margin: 1mm auto 0;
+  }
+  /* “我们会出手”：手写花体（龙藏），比下方解释大得多，无句号 */
+  .strike {
+    font-family: 'Long Cang', 'Ma Shan Zheng', cursive;
+    font-size: 78pt; color: var(--accent);
+    margin: 10mm 0 5mm;
+    letter-spacing: 0.06em;
+    display: inline-block;
+    text-shadow: 0 1.5px 2px rgba(122,61,18,0.22);
+  }
+  .features {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 15pt; color: var(--ink-soft);
+    max-width: 60ch; margin: 0 auto;
+    line-height: 1.75;
+  }
+  .features .sep { color: var(--accent); margin: 0 0.4em; }
+
+  /* —— 底部小签 —— */
+  .foot {
+    font-family: 'Caveat', cursive;
+    font-size: 13pt; color: var(--accent);
+    letter-spacing: 0.10em; opacity: 0.8;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+  <div class="poster">
+    <div class="topline">Course Conquer · 2026</div>
+
+    <div class="center">
+      <div class="title-wrap">
+        <div class="title">Course<br/>Conquer</div>
+        <div class="title-ghost" aria-hidden="true">Course Conquer</div>
+      </div>
+
+      <div class="copy">
+        <div class="row"><span class="lbl">如果你是——</span></div>
+        <div class="row"><span class="val">学生 与 研究者</span></div>
+
+        <div class="row"><span class="lbl">如果你正遭遇——</span></div>
+        <div class="pain">笔记、论文、代码、截图四散各处，要用时永远找不到那一段。</div>
+
+        <div class="strike">我们会出手</div>
+
+        <div class="features">
+          课件、代码、表格、图片一键入库
+          <span class="sep">·</span>自动摘要与标签
+          <span class="sep">·</span>检索精确到页码行号
+          <span class="sep">·</span>问答带引用
+          <span class="sep">·</span>知识图谱一键成图
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">capture · distill · reuse</div>
+  </div>
+</body>
+</html>
