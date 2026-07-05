@@ -131,6 +131,11 @@ class GraphStore:
             e = c.execute("SELECT COUNT(*) FROM kg_edges WHERE workspace_id=?", (workspace_id,)).fetchone()[0]
         return n, e
 
+    def delete_workspace(self, workspace_id: str) -> None:
+        with self._conn() as c:
+            c.execute("DELETE FROM kg_nodes WHERE workspace_id=?", (workspace_id,))
+            c.execute("DELETE FROM kg_edges WHERE workspace_id=?", (workspace_id,))
+
     def graph(self, workspace_id: str) -> GraphView:
         with self._conn() as c:
             nrows = c.execute("SELECT * FROM kg_nodes WHERE workspace_id=? ORDER BY mentions DESC",

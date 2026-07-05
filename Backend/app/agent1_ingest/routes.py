@@ -89,5 +89,6 @@ def get_file(doc_id: str):
     if not raw_path or not p.exists():
         raise HTTPException(status_code=404, detail="原始文件未保存")
     # inline 让浏览器直接预览（PDF/图片），PDF viewer 支持 #page=N 跳页
-    return FileResponse(str(p), filename=rec.filename, media_type=rec.mime or "application/octet-stream")
+    return FileResponse(str(p), filename=rec.filename, media_type=rec.mime or "application/octet-stream",
+                        content_disposition_type="inline")
 

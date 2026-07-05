@@ -61,4 +61,58 @@ export const api = {
     const u = `${BASE}/files/${doc_id}`
     return page ? `${u}#page=${page}` : u
   },
+
+  // —— 知识库（workspace）管理 ——
+  listWorkspaces() {
+    return fetch(`${BASE}/workspaces`).then(j)
+  },
+  createWorkspace(name) {
+    const fd = new FormData()
+    fd.append('name', name)
+    return fetch(`${BASE}/workspaces`, { method: 'POST', body: fd }).then(j)
+  },
+  deleteWorkspace(id) {
+    return fetch(`${BASE}/workspaces/${id}`, { method: 'DELETE' }).then(j)
+  },
+  renameWorkspace(id, name) {
+    const fd = new FormData()
+    fd.append('name', name)
+    return fetch(`${BASE}/workspaces/${id}`, { method: 'PATCH', body: fd }).then(j)
+  },
+  summarizeDocument(id) {
+    return fetch(`${BASE}/documents/${id}/summarize`, { method: 'POST' }).then(j)
+  },
+  summarizeAll(wsId) {
+    return fetch(`${BASE}/workspaces/${wsId}/summarize_all`, { method: 'POST' }).then(j)
+  },
+  saveConvToKB(convId) {
+    return fetch(`${BASE}/conversations/${convId}/save_to_kb`, { method: 'POST' }).then(j)
+  },
+  // 多模态生成（下载文件）
+  generateUrl() { return `${BASE}/generate` },
+  deleteDocument(id) {
+    return fetch(`${BASE}/documents/${id}`, { method: 'DELETE' }).then(j)
+  },
+
+  // —— 对话（记忆持久化）——
+  listConversations(workspace_id) {
+    return fetch(`${BASE}/conversations?workspace_id=${encodeURIComponent(workspace_id)}`).then(j)
+  },
+  createConversation(workspace_id, title = '') {
+    const fd = new FormData()
+    fd.append('workspace_id', workspace_id)
+    fd.append('title', title)
+    return fetch(`${BASE}/conversations`, { method: 'POST', body: fd }).then(j)
+  },
+  getConversation(id) {
+    return fetch(`${BASE}/conversations/${id}`).then(j)
+  },
+  deleteConversation(id) {
+    return fetch(`${BASE}/conversations/${id}`, { method: 'DELETE' }).then(j)
+  },
+
+  // —— 用量统计 ——
+  usage(workspace_id) {
+    return fetch(`${BASE}/usage?workspace_id=${encodeURIComponent(workspace_id)}`).then(j)
+  },
 }

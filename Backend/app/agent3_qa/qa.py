@@ -84,10 +84,15 @@ def parallel_retrieve(workspace_id: str, queries: List[str], k: int,
         return list(ex.map(lambda q: retrieve(workspace_id, q, k, doc_ids), queries))
 
 
+# ReAct 式裁判：Thought → Action。借鉴 ReAct(单步反思) + SeaKR(知识冲突觉察)。
+# Action: synthesize=证据够，开始作答；retrieve=再查一轮；web=需要联网。
 JUDGE_SYS = (
-    "你是检索充分性裁判。看用户问题和已检索到的证据，判断这些证据是否足以准确回答。"
-    '只输出 JSON：{"sufficient": true/false, "missing": "还缺什么", "next_query": "若不足，下一步该检索的查询；足够就留空"}。'
-    "证据已能回答就判 true，否则给出更有针对性的 next_query。"
+    "你是检索-反思裁判（ReAct 风格）。先 Thought 一步步推理证据是否足以回答、是否有相互矛盾，"
+    "再决定 Action。只输出 JSON："
+    '{"thought":"推理过程","action":"synthesize|retrieve|web","conflict":true/false,'
+    '"next_query":"若 action=retrieve 给出下一步查询；否则留空"}。'
+    "规则：证据足够且一致 → synthesize；证据不足 → retrieve；证据相互矛盾或需要外部实时信息 → web；"
+    "证据冲突(conflict=true)时优先 synthesize 并在 thought 里指出冲突。"
 )
 
 
@@ -97,8 +102,16 @@ def judge_sufficiency(question: str, evidence: List[Dict[str, Any]]) -> Dict[str
         "- (%s · %s) %s" % (h.get("filename", "?"), h.get("location", ""), (h.get("text", ""))[:200])
         for h in sorted(evidence, key=lambda x: x.get("score", 0), reverse=True)[:10]
     ) or "（无）"
-    return llm.chat_json(JUDGE_SYS, "问题：%s\n\n已检索到的证据：\n%s" % (question, brief),
-                         model=s.llm_model)
+    d = llm.chat_json(JUDGE_SYS, "问题：%s\n\n已检索到的证据：\n%s" % (question, brief),
+                      model=s.llm_model)
+    # 兼容旧字段
+    action = d.get("action") or ("synthesize" if d.get("sufficient") else "retrieve")
+    if action not in ("synthesize", "retrieve", "web"):
+        action = "synthesize" if d.get("sufficient") else "retrieve"
+    d["action"] = action
+    d["conflict"] = bool(d.get("conflict", False))
+    d["thought"] = str(d.get("thought", ""))
+    return d
 
 
 # ---------------- 合成 ----------------
@@ -148,7 +161,7 @@ def synthesize(question: str, evidence: List[Dict[str, Any]], history: List[Chat
     user = "对话历史：\n%s\n\n【证据】\n%s\n%s\n\n问题：%s" % (
         _history_text(history, limit=history_turns * 2), numbered, extra, question)
     raw = llm.chat([{"role": "system", "content": SYNTH_SYS}, {"role": "user", "content": user}],
-                   model=s.llm_model_strong, max_tokens=1200)
+                   model=s.llm_model_strong, max_tokens=4000)
 
     # 解析来源标记
     m = _PROV_RE.search(raw)
@@ -174,12 +187,80 @@ def _trace(step: str, text: str, **detail) -> TraceStep:
     return TraceStep(step=step, text=text, detail=detail)
 
 
+def _importance(text: str) -> float:
+    """Generative Agents 重要性分（启发式 1-10）。论文用 LLM 打分；这里用规则省 token。"""
+    t = (text or "")
+    score = 3.0
+    if any(k in t for k in ("复杂度", "为什么", "区别", "原理", "对比", "关系", "依赖")):
+        score += 3
+    if any(k in t for k in ("算法", "代码", "函数", "结构体", "前缀", "松弛")):
+        score += 2
+    if len(t) > 40:
+        score += 2
+    return max(1.0, min(10.0, score))
+
+
 # ---------------- 编排 ----------------
 def chat(req: ChatRequest) -> ChatResponse:
+    """入口：加载持久化记忆(Generative Agents) → 跑检索问答 → 记账 + 写回对话。"""
+    store = get_storage()
+    s = get_settings()
+    q_emb = None
+    n_recalled = 0
+    # 记忆：从持久化对话检索相关历史（importance × recency × relevance）
+    if req.conversation_id:
+        try:
+            q_emb = llm.embed([req.question])[0]
+        except Exception:
+            q_emb = None
+        if q_emb is not None and not req.history:
+            recalled = store.retrieve_memory(req.conversation_id, q_emb, k=s.qa_history_turns)
+            n_recalled = len(recalled)
+            # 兜底：相关轮不足时补最近若干轮
+            conv = store.get_conversation(req.conversation_id)
+            recent = conv["messages"][-(s.qa_history_turns * 2):] if conv else []
+            seen_content = {r["content"] for r in recalled}
+            for m in recent:
+                if m["content"] not in seen_content:
+                    recalled.append({"role": m["role"], "content": m["content"]})
+            req.history = [ChatMessage(role=r["role"], content=r["content"]) for r in recalled]
+
+    with llm.track_usage() as ub:
+        resp = _do_chat(req)
+    if n_recalled:
+        resp.trace.insert(0, _trace("memory", "记忆：召回 %d 条相关历史轮次" % n_recalled, n_recalled=n_recalled))
+
+    # token 记账
+    tin = sum(u[0] for u in ub)
+    tout = sum(u[1] for u in ub)
+    store.add_token_usage(req.workspace_id, "chat", tin, tout)
+    resp.usage = {"tokens_in": tin, "tokens_out": tout, "total": tin + tout}
+
+    # 写回对话（记忆持久化：user 带重要性 + 向量；assistant 带 trace/引用）
+    if req.conversation_id:
+        store.ensure_workspace(req.workspace_id)
+        store.add_message(req.conversation_id, "user", req.question,
+                          importance=_importance(req.question), embedding=q_emb)
+        store.add_message(
+            req.conversation_id, "assistant", resp.answer,
+            meta={
+                "trace": [t.model_dump() for t in resp.trace],
+                "citations": [c.model_dump() for c in resp.citations],
+                "provenance": resp.provenance, "route": resp.route,
+                "web_links": [l.model_dump() for l in resp.web_links],
+                "usage": resp.usage,
+            },
+            tokens_in=tin, tokens_out=tout,
+        )
+    return resp
+
+
+def _do_chat(req: ChatRequest) -> ChatResponse:
     s = get_settings()
     warnings: List[str] = []
     trace: List[TraceStep] = []
-    docs = get_storage().list_documents(req.workspace_id)
+    store = get_storage()
+    docs = store.list_documents(req.workspace_id)
     if not docs:
         return ChatResponse(answer="知识库还没有内容，请先上传文件再提问。", route="empty",
                             trace=[_trace("plan", "知识库为空，无法检索")])
@@ -255,12 +336,24 @@ def chat(req: ChatRequest) -> ChatResponse:
     rounds = 1
     while rounds < max_rounds:
         verdict = judge_sufficiency(req.question, evidence)
-        if verdict.get("sufficient") or not str(verdict.get("next_query", "")).strip():
-            trace.append(_trace("judge", "裁判：证据充分，开始作答"))
+        action = verdict.get("action", "synthesize")
+        nq = str(verdict.get("next_query", "")).strip()
+        conflict = verdict.get("conflict")
+        # ReAct: Thought 一句话 + Action 驱动
+        trace.append(_trace("judge", "反思：%s → %s%s" % (
+            (verdict.get("thought", "") or "")[:90], action,
+            "（检测到证据冲突）" if conflict else ""), action=action, conflict=conflict))
+        if action == "synthesize":
             break
-        nq = str(verdict["next_query"]).strip()
-        trace.append(_trace("judge", "裁判：证据不足（%s），再查「%s」" % (
-            verdict.get("missing", "") or "缺漏", nq), next_query=nq))
+        if action == "web" and req.allow_web:
+            # 裁判认为需要联网：转向 web 分支
+            trace.append(_trace("web", "裁判判定需要联网，转为联网搜索"))
+            ans, links = qa_tools.web_answer(req.question, req.history, warnings)
+            trace.append(_trace("synthesize", "汇总联网结果作答"))
+            return ChatResponse(answer=ans, route="web", intent=plan["intent"], plan=plan,
+                                trace=trace, provenance="web", web_links=links, warnings=warnings)
+        if action != "retrieve" or not nq:
+            break
         hits = retrieve(req.workspace_id, nq, k, target)
         _log_hits(nq, hits)
         new = [h for h in hits if h["chunk_id"] not in seen]

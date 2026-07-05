@@ -48,7 +48,7 @@ def web_answer(question: str, history: List[ChatMessage], warnings: List[str]) -
     try:
         text = llm.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            model=s.web_model, max_tokens=1100,
+            model=s.web_model, max_tokens=4000,
         )
         return text, _extract_links(text)
     except Exception as e:  # noqa: BLE001
@@ -96,7 +96,7 @@ def kg_answer(question: str, workspace_id: str, history: List[ChatMessage],
     try:
         ans = llm.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            model=s.llm_model_strong, max_tokens=1100,
+            model=s.llm_model_strong, max_tokens=4000,
         )
     except Exception as ex:  # noqa: BLE001
         warnings.append("KG 问答失败：%s" % ex)

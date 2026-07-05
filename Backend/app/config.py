@@ -41,11 +41,12 @@ class Settings:
         self.llm_api_key = os.environ.get("LLM_API_KEY", gw.get("api_key", ""))
 
         # --- 模型路由 ---
-        self.llm_model = models.get("llm_model", "bailian/deepseek-v4-flash")
-        self.llm_model_strong = models.get("llm_model_strong", "bailian/deepseek-v4-pro")
-        self.vision_model = models.get("vision_model", "qwen-vl-max")
+        self.llm_model = models.get("llm_model", "gpt-5.1-high")
+        self.llm_model_strong = models.get("llm_model_strong", "gpt-5.1-high")
+        self.vision_model = models.get("vision_model", "gpt-5.1-high")
         self.embed_model = models.get("embed_model", "BAAI/bge-m3")
         self.web_model = models.get("web_model", "moonshotai/kimi-k2:online")
+        self.image_model = models.get("image_model", "gpt-image-1")  # 多模态生成：图像
 
         # --- 存储路径 ---
         self.data_dir = BASE_DIR / "data"

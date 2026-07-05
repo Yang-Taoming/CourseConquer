@@ -9,61 +9,39 @@ const TYPE_COLOR = {
   Problem: '#ea580c', Complexity: '#7c3aed', Constraint: '#dc2626', Function: '#4f46e5',
 }
 
-// 简单力导向布局（无依赖）：节点斥力 + 边弹簧 + 向心，迭代到稳定。
-function forceLayout(nodes, edges, W, H, iters = 320) {
+// 同心圆辐射布局（按度数排圈，节点均匀分布在环上）——彻底避免四角堆叠。
+function forceLayout(nodes, edges, W, H) {
   const pos = {}
   const cx = W / 2, cy = H / 2
-  const n = nodes.length
-  // 初始：圆环随机分布，避免重叠
-  nodes.forEach((node, i) => {
-    const ang = (i / Math.max(1, n)) * Math.PI * 2
-    const r = Math.min(W, H) * 0.32 * (0.6 + Math.random() * 0.4)
-    pos[node.id] = { x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang), vx: 0, vy: 0 }
+  // 计算每个节点的度数
+  const deg = {}
+  nodes.forEach((n) => { deg[n.id] = 0 })
+  edges.forEach((e) => { deg[e.source] = (deg[e.source] || 0) + 1; deg[e.target] = (deg[e.target] || 0) + 1 })
+  // 按度数降序（度数高的靠中心）
+  const sorted = [...nodes].sort((a, b) =>
+    (deg[b.id] || 0) - (deg[a.id] || 0) || (b.mentions || 0) - (a.mentions || 0))
+  // 分环：ring0 中心 1 个；ring1 8；ring2 16；ring3 24；ring4 剩余
+  const rings = [[], [], [], [], []]
+  const caps = [1, 8, 16, 24, 9999]
+  sorted.forEach((n) => {
+    for (let i = 0; i < rings.length; i++) {
+      if (rings[i].length < caps[i]) { rings[i].push(n); break }
+    }
   })
-  const adj = {}
-  edges.forEach((e) => {
-    adj[e.source] = adj[e.source] || []; adj[e.source].push(e.target)
-    adj[e.target] = adj[e.target] || []; adj[e.target].push(e.source)
+  const radii = [0, Math.min(W, H) * 0.16, Math.min(W, H) * 0.30, Math.min(W, H) * 0.42, Math.min(W, H) * 0.52]
+  rings.forEach((ring, ri) => {
+    const r = radii[ri]
+    const cnt = ring.length
+    ring.forEach((n, i) => {
+      // 起始角度错开，让各环视觉上对齐
+      const ang = (i / Math.max(1, cnt)) * Math.PI * 2 + (ri % 2) * (Math.PI / cnt)
+      pos[n.id] = { x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) }
+    })
   })
-  const k_rep = 9000, k_spring = 0.04, L = 130, damp = 0.82
-  for (let it = 0; it < iters; it++) {
-    // 斥力
-    for (let i = 0; i < n; i++) {
-      for (let j = i + 1; j < n; j++) {
-        const a = pos[nodes[i].id], b = pos[nodes[j].id]
-        let dx = b.x - a.x, dy = b.y - a.y
-        let d2 = dx * dx + dy * dy || 0.01
-        let d = Math.sqrt(d2)
-        const f = k_rep / d2
-        const fx = (dx / d) * f, fy = (dy / d) * f
-        a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy
-      }
-    }
-    // 弹簧
-    for (const e of edges) {
-      const a = pos[e.source], b = pos[e.target]
-      if (!a || !b) continue
-      let dx = b.x - a.x, dy = b.y - a.y
-      let d = Math.sqrt(dx * dx + dy * dy) || 0.01
-      const f = k_spring * (d - L)
-      const fx = (dx / d) * f, fy = (dy / d) * f
-      a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy
-    }
-    // 向心 + 阻尼 + 应用
-    for (const id in pos) {
-      const p = pos[id]
-      p.vx += (cx - p.x) * 0.008
-      p.vy += (cy - p.y) * 0.008
-      p.vx *= damp; p.vy *= damp
-      p.x += p.vx; p.y += p.vy
-      p.x = Math.max(40, Math.min(W - 40, p.x))
-      p.y = Math.max(40, Math.min(H - 40, p.y))
-    }
-  }
   return pos
 }
 
-export default function KnowledgeGraph() {
+export default function KnowledgeGraph({ onActivity }) {
   const { workspace } = useWorkspace()
   const [data, setData] = useState({ nodes: [], edges: [], view: '', stats: {}, schema: {} })
   const [busy, setBusy] = useState(false)
@@ -94,6 +72,7 @@ export default function KnowledgeGraph() {
     try {
       const r = await api.kgBuild(workspace)
       setBuildResult(r); await load()
+      onActivity?.()
     } catch (e) {
       setErr('构建失败：' + e.message)
     } finally {
@@ -166,139 +145,119 @@ export default function KnowledgeGraph() {
       )}
 
       <div className="kg-wrap">
-        <div className="kg-canvas" style={{ position: 'relative' }}>
-          {data.nodes.length === 0 ? (
-            <div className="kg-empty">
-              <div className="big">图谱尚未构建</div>
-              <div className="tiny">点击右上「构建图谱」，从已入库文档抽取实体与关系</div>
-            </div>
-          ) : (
-            <svg
-              ref={svgRef}
-              viewBox={`0 0 ${W} ${H}`}
-              onWheel={onWheel}
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              style={{ touchAction: 'none', cursor: 'grab', background: 'var(--paper)' }}
-            >
-              <rect x={0} y={0} width={W} height={H} fill="transparent" />
-              <g transform={`translate(${tf.x},${tf.y}) scale(${tf.k})`}>
-                {/* 边 */}
-                {data.edges.map((e) => {
-                  const s = pos[e.source], t = pos[e.target]
-                  if (!s || !t) return null
-                  const dim = isDimEdge(e)
-                  const hl = focusId && (e.source === focusId || e.target === focusId)
-                  return (
-                    <line
-                      key={e.id}
-                      className="kg-edge"
-                      x1={s.x} y1={s.y} x2={t.x} y2={t.y}
-                      stroke={hl ? 'var(--gold)' : 'var(--rule-2)'}
-                      strokeWidth={hl ? 2 : 1}
-                      opacity={dim ? 0.12 : 0.7}
-                    />
-                  )
-                })}
-                {/* 节点 */}
-                {data.nodes.map((node) => {
-                  const p = pos[node.id]
-                  if (!p) return null
-                  const r = 6 + Math.min(16, (node.mentions || 1) * 1.8)
-                  const col = TYPE_COLOR[node.type] || '#7a6a5a'
-                  const dim = isDim(node.id)
-                  const sel = selected === node.id
-                  return (
-                    <g
-                      key={node.id}
-                      className="kg-node"
-                      transform={`translate(${p.x},${p.y})`}
-                      opacity={dim ? 0.18 : 1}
-                      style={{ cursor: 'pointer' }}
-                      onMouseEnter={() => setHover(node.id)}
-                      onMouseLeave={() => setHover(null)}
-                      onClick={() => setSelected(selected === node.id ? null : node.id)}
-                    >
-                      <circle r={r} fill={col} fillOpacity={0.85} stroke={sel ? 'var(--ink)' : 'var(--ink)'} strokeWidth={sel ? 3 : 1} />
-                      <text x={r + 5} y={4} fill="var(--ink)" fontWeight={sel ? 600 : 400} fontSize={11}>
-                        {node.name}
-                      </text>
-                    </g>
-                  )
-                })}
-              </g>
-            </svg>
-          )}
-          {data.nodes.length > 0 && (
-            <button className="btn ghost sm" onClick={resetView} style={{ position: 'absolute', top: 12, right: 12 }}>
-              重置视图
-            </button>
-          )}
-          {data.stats && (
-            <div className="tiny" style={{ position: 'absolute', bottom: 10, left: 14, letterSpacing: '0.08em' }}>
-              {data.stats.vertices ?? data.nodes.length} 顶点 · {data.stats.edges ?? data.edges.length} 边
-              {data.stats.collapsed_property_facts ? ` · 折叠 ${data.stats.collapsed_property_facts} 属性` : ''}
-              {' · '}view: {data.view}
-            </div>
-          )}
-        </div>
+        {/* 缩放控件放在画布外，避免与节点重合 */}
+        {data.nodes.length > 0 && (
+          <div className="kg-controls-bar">
+            <button className="btn ghost sm" onClick={() => setTf((t) => ({ ...t, k: Math.min(3, t.k * 1.2) }))}>＋ 放大</button>
+            <button className="btn ghost sm" onClick={() => setTf((t) => ({ ...t, k: Math.max(0.3, t.k / 1.2) }))}>－ 缩小</button>
+            <button className="btn ghost sm" onClick={resetView}>重置</button>
+            <span className="tiny" style={{ marginLeft: 'auto' }}>
+              {data.stats?.vertices ?? data.nodes.length} 顶点 · {data.stats?.edges ?? data.edges.length} 边
+            </span>
+          </div>
+        )}
 
-        <div className="kg-side">
-          <div className="card">
+        {/* 画布 + 右侧实体类型 */}
+        <div className="kg-main">
+          <div className="kg-canvas">
+            {data.nodes.length === 0 ? (
+              <div className="kg-empty">
+                <div className="big">图谱尚未构建</div>
+                <div className="tiny">点击右上「构建图谱」，从已入库文档抽取实体与关系</div>
+              </div>
+            ) : (
+              <svg
+                ref={svgRef}
+                viewBox={`0 0 ${W} ${H}`}
+                onWheel={onWheel}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ touchAction: 'none', cursor: 'grab', background: 'var(--paper)' }}
+              >
+                <rect x={0} y={0} width={W} height={H} fill="transparent" />
+                <g transform={`translate(${tf.x},${tf.y}) scale(${tf.k})`}>
+                  {data.edges.map((e) => {
+                    const s = pos[e.source], t = pos[e.target]
+                    if (!s || !t) return null
+                    const dim = isDimEdge(e)
+                    const hl = focusId && (e.source === focusId || e.target === focusId)
+                    return (
+                      <line key={e.id} className="kg-edge" x1={s.x} y1={s.y} x2={t.x} y2={t.y}
+                        stroke={hl ? 'var(--gold)' : 'var(--rule-2)'} strokeWidth={hl ? 2 : 1}
+                        opacity={dim ? 0.12 : 0.7} />
+                    )
+                  })}
+                  {data.nodes.map((node) => {
+                    const p = pos[node.id]
+                    if (!p) return null
+                    const r = 6 + Math.min(16, (node.mentions || 1) * 1.8)
+                    const col = TYPE_COLOR[node.type] || '#7a6a5a'
+                    const dim = isDim(node.id)
+                    const sel = selected === node.id
+                    return (
+                      <g key={node.id} className="kg-node" transform={`translate(${p.x},${p.y})`}
+                        opacity={dim ? 0.18 : 1} style={{ cursor: 'pointer' }}
+                        onMouseEnter={() => setHover(node.id)} onMouseLeave={() => setHover(null)}
+                        onClick={() => setSelected(selected === node.id ? null : node.id)}>
+                        <circle r={r} fill={col} fillOpacity={0.85} stroke="var(--ink)" strokeWidth={sel ? 3 : 1} />
+                        <text x={r + 5} y={4} fill="var(--ink)" fontWeight={sel ? 600 : 400} fontSize={11}>{node.name}</text>
+                      </g>
+                    )
+                  })}
+                </g>
+              </svg>
+            )}
+          </div>
+
+          <aside className="kg-legend">
             <div className="eyebrow"><span className="num">∎</span>实体类型</div>
             <div className="legend mt-16">
               {types.map((t) => (
                 <div className="legend-item" key={t}>
-                  <span className="legend-dot" style={{ background: TYPE_COLOR[t] || '#7a6a5a' }} />
-                  {t}
+                  <span className="legend-dot" style={{ background: TYPE_COLOR[t] || '#7a6a5a' }} />{t}
                 </div>
               ))}
               {types.length === 0 && <span className="tiny">（无）</span>}
             </div>
-          </div>
-
-          {selected && byId[selected] ? (
-            <div className="card mt-16">
-              <div className="between">
-                <div className="eyebrow"><span className="num">∎</span>选中节点</div>
-                <span className="tag gold">{byId[selected].type}</span>
-              </div>
-              <h3 className="mt-8">{byId[selected].name}</h3>
-              <div className="tiny mt-8">
-                mentions {byId[selected].mentions} · {byId[selected].doc_ids?.length || 0} 文档
-              </div>
-              {byId[selected].property_values && Object.keys(byId[selected].property_values).length > 0 && (
-                <div className="mt-16">
-                  <div className="tiny" style={{ letterSpacing: '0.16em' }}>属性（折叠）</div>
-                  {Object.entries(byId[selected].property_values).map(([k, v]) => (
-                    <div key={k} className="mt-8" style={{ fontSize: 13 }}>
-                      <span className="tiny" style={{ color: 'var(--gold)' }}>{k}: </span>
-                      <span>{Array.isArray(v) ? v.join('、') : String(v)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {byId[selected].description && (
-                <p className="mt-16" style={{ fontFamily: 'var(--serif)', fontSize: 14, color: 'var(--ink-2)', whiteSpace: 'pre-wrap' }}>
-                  {byId[selected].description}
-                </p>
-              )}
-              {neighbors[selected] && (
-                <div className="tiny mt-16" style={{ letterSpacing: '0.16em' }}>
-                  邻居：{[...neighbors[selected]].map((id) => byId[id]?.name).filter(Boolean).join('、') || '无'}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="card mt-16">
-              <div className="eyebrow"><span className="num">∎</span>提示</div>
-              <p className="mt-16" style={{ fontFamily: 'var(--serif)', fontSize: 14, color: 'var(--ink-2)' }}>
-                点击节点查看详情与邻居；滚轮缩放；拖拽空白处平移。复杂度/约束等已折叠进节点属性。
-              </p>
-            </div>
-          )}
+          </aside>
         </div>
+
+        {/* 选中节点：画布正下方，整宽，不偏移 */}
+        {selected && byId[selected] && (
+          <div className="kg-selected">
+            <div className="between">
+              <div className="eyebrow"><span className="num">∎</span>选中节点</div>
+              <div className="row gap-8">
+                <span className="tag gold">{byId[selected].type}</span>
+                <button className="kg-close" onClick={() => setSelected(null)}>×</button>
+              </div>
+            </div>
+            <h3 className="mt-8">{byId[selected].name}</h3>
+            <div className="tiny mt-8">mentions {byId[selected].mentions} · {byId[selected].doc_ids?.length || 0} 文档</div>
+            {byId[selected].property_values && Object.keys(byId[selected].property_values).length > 0 && (
+              <div className="mt-16">
+                <div className="tiny" style={{ letterSpacing: '0.16em' }}>属性（折叠）</div>
+                {Object.entries(byId[selected].property_values).map(([k, v]) => (
+                  <div key={k} className="mt-8" style={{ fontSize: 13 }}>
+                    <span className="tiny" style={{ color: 'var(--gold)' }}>{k}: </span>
+                    <span>{Array.isArray(v) ? v.join('、') : String(v)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {byId[selected].description && (
+              <p className="mt-16" style={{ fontFamily: 'var(--serif)', fontSize: 14, color: 'var(--ink-2)', whiteSpace: 'pre-wrap' }}>
+                {byId[selected].description}
+              </p>
+            )}
+            {neighbors[selected] && (
+              <div className="tiny mt-16" style={{ letterSpacing: '0.16em' }}>
+                邻居：{[...neighbors[selected]].map((id) => byId[id]?.name).filter(Boolean).join('、') || '无'}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

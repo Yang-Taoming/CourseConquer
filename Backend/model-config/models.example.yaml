@@ -6,11 +6,12 @@ gateway:
 
 # 模型名称给默认值（当前在用的几款）；可按需覆盖
 models:
-  llm_model: bailian/deepseek-v4-flash        # 文本主力（快省）
-  llm_model_strong: bailian/deepseek-v4-pro   # Agent3 合成（更强/长上下文）
-  vision_model: qwen-vl-max                   # 图片 OCR + 图表理解
-  embed_model: BAAI/bge-m3                    # 向量化
-  web_model: moonshotai/kimi-k2:online        # 联网搜索
+  llm_model: gpt-5.1-high                # 统一多模态大模型（文本+视觉）
+  llm_model_strong: gpt-5.1-high
+  vision_model: gpt-5.1-high             # 图片 OCR + 图表理解
+  embed_model: BAAI/bge-m3               # 向量化
+  web_model: moonshotai/kimi-k2:online   # 联网搜索
+  image_model: gpt-image-1               # 多模态生成：图像
 
 parsing:
   ocr_min_chars: 12        # OCR 文本少于此值 -> 视觉兜底

@@ -36,6 +36,8 @@ def ingest_file(
 ) -> IngestResult:
     s = get_settings()
     warnings: List[str] = []
+    store = get_storage()
+    store.ensure_workspace(workspace_id)
 
     # 1) 解析（一次）
     parsed = parse_file(data, filename)
@@ -96,7 +98,6 @@ def ingest_file(
             "raw_path": str(raw_path),
         },
     )
-    store = get_storage()
     if embeddings:
         store.add_document(record, chunks, embeddings)
     else:

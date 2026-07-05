@@ -10,6 +10,7 @@ from typing import List, Optional
 from app.config import get_settings
 from app.agent2_kg.extract import extract
 from app.agent2_kg.graph_store import get_graph_store
+from app.shared.llm import client as llm
 from app.shared.schemas.kg import BuildResult
 from app.shared.storage.local import get_storage
 
@@ -48,6 +49,7 @@ def build_kg(workspace_id: str = "default", doc_id: Optional[str] = None) -> Bui
     store = get_storage()
     gstore = get_graph_store()
     warnings: List[str] = []
+    store.ensure_workspace(workspace_id)
 
     # 选定要构建的文档：单篇 or 整个工作区
     if doc_id:
@@ -61,21 +63,27 @@ def build_kg(workspace_id: str = "default", doc_id: Optional[str] = None) -> Bui
     nodes_added = 0
     edges_added = 0
     used_docs: List[str] = []
+    tin = tout = 0
 
-    for rec in docs:
-        if not rec.markdown.strip():
-            continue
-        context = "课程/分类：%s；文件名：%s" % (rec.category or "未知", rec.filename)
-        used_docs.append(rec.id)
-        for batch in _batches(rec.markdown, s.kg_batch_chars):
-            try:
-                ext = extract(batch, context)
-            except Exception as e:  # noqa: BLE001
-                warnings.append("文档 %s 抽取失败: %s" % (rec.id, e))
+    with llm.track_usage() as ub:
+        for rec in docs:
+            if not rec.markdown.strip():
                 continue
-            na, ea = gstore.upsert(rec.workspace_id, rec.id, ext["entities"], ext["relations"])
-            nodes_added += na
-            edges_added += ea
+            context = "课程/分类：%s；文件名：%s" % (rec.category or "未知", rec.filename)
+            used_docs.append(rec.id)
+            for batch in _batches(rec.markdown, s.kg_batch_chars):
+                try:
+                    ext = extract(batch, context)
+                except Exception as e:  # noqa: BLE001
+                    warnings.append("文档 %s 抽取失败: %s" % (rec.id, e))
+                    continue
+                na, ea = gstore.upsert(rec.workspace_id, rec.id, ext["entities"], ext["relations"])
+                nodes_added += na
+                edges_added += ea
+
+    tin = sum(u[0] for u in ub); tout = sum(u[1] for u in ub)
+    if tin or tout:
+        store.add_token_usage(workspace_id, "kg_build", tin, tout)
 
     n_total, e_total = gstore.counts(workspace_id)
     return BuildResult(

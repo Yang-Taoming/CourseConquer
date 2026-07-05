@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { api } from '../api.js'
 import { useWorkspace } from '../App.jsx'
 
-export default function Upload() {
+export default function Upload({ onUploaded }) {
   const { workspace } = useWorkspace()
   const fileRef = useRef(null)
   const [drag, setDrag] = useState(false)
@@ -25,6 +25,7 @@ export default function Upload() {
         n_chunks: r.document.n_chunks,
         warnings: r.warnings || [],
       })
+      onUploaded?.()
     } catch (e) {
       setErr('上传失败：' + e.message)
     } finally {

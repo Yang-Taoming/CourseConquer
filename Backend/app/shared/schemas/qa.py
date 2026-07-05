@@ -14,7 +14,8 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     question: str
     workspace_id: str = "default"
-    history: List[ChatMessage] = Field(default_factory=list)  # 多轮对话历史（客户端持有）
+    conversation_id: Optional[str] = None   # 持久化对话：传入则自动读写历史（记忆）
+    history: List[ChatMessage] = Field(default_factory=list)  # 显式历史（无 conversation_id 时用）
     allow_web: bool = False        # 是否允许联网搜索（默认关，避免误联网）
     top_k: Optional[int] = None
     max_rounds: Optional[int] = None
@@ -51,3 +52,4 @@ class ChatResponse(BaseModel):
     web_links: List[WebLink] = Field(default_factory=list)
     plan: Dict[str, Any] = Field(default_factory=dict)
     warnings: List[str] = Field(default_factory=list)
+    usage: Dict[str, Any] = Field(default_factory=dict)   # tokens_in / tokens_out / total（本次问答）
